@@ -162,23 +162,47 @@ class PaperRepository:
         if not target_paper or target_paper.embedding is None:
             return []
 
-        distance_expr = Paper.embedding.cosine_distance(target_paper.embedding)
-        stmt = (
-            select(Paper, distance_expr.label("distance"))
-            .where(Paper.id != target_paper.id)
-            .where(Paper.embedding.is_not(None))
-            .order_by(distance_expr.asc())
-            .limit(limit)
-        )
+        dialect_name = self.session.bind.dialect.name if self.session.bind else "postgresql"
 
-        result = await self.session.execute(stmt)
-        rows = result.all()
+        if dialect_name == "postgresql":
+            # PostgreSQL with pgvector HNSW index
+            distance_expr = Paper.embedding.cosine_distance(target_paper.embedding)
+            stmt = (
+                select(Paper, distance_expr.label("distance"))
+                .where(Paper.id != target_paper.id)
+                .where(Paper.embedding.is_not(None))
+                .order_by(distance_expr.asc())
+                .limit(limit)
+            )
+            result = await self.session.execute(stmt)
+            rows = result.all()
 
-        related = []
-        for paper, distance in rows:
-            # Cosine similarity = 1.0 - cosine_distance
-            sim = 1.0 - float(distance) if distance is not None else 0.0
-            sim = max(0.0, min(1.0, sim))
-            related.append((paper, round(sim, 4)))
+            related = []
+            for paper, distance in rows:
+                sim = 1.0 - float(distance) if distance is not None else 0.0
+                sim = max(0.0, min(1.0, sim))
+                related.append((paper, round(sim, 4)))
+            return related
+        else:
+            # Python-based cosine similarity fallback for non-Postgres environments (e.g. SQLite tests)
+            import numpy as np
 
-        return related
+            stmt = select(Paper).where(Paper.id != target_paper.id).where(Paper.embedding.is_not(None))
+            result = await self.session.execute(stmt)
+            all_papers = result.scalars().all()
+
+            target_vec = np.array(target_paper.embedding, dtype=float)
+            target_norm = np.linalg.norm(target_vec)
+
+            scored_papers = []
+            for p in all_papers:
+                vec = np.array(p.embedding, dtype=float)
+                norm = np.linalg.norm(vec)
+                if norm > 0 and target_norm > 0:
+                    sim = float(np.dot(target_vec, vec) / (target_norm * norm))
+                else:
+                    sim = 0.0
+                scored_papers.append((p, round(max(0.0, min(1.0, sim)), 4)))
+
+            scored_papers.sort(key=lambda x: x[1], reverse=True)
+            return scored_papers[:limit]

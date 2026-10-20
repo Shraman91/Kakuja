@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     # Analysis & Embedding
     EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
     MAX_ANNOTATIONS_PER_PAPER: int = 150
+    USE_LLM_ANALYZER: bool = False
 
     # CORS
     CORS_ORIGINS: list[str] = [
