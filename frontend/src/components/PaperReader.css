@@ -1,0 +1,264 @@
+/* Paper Reader Styles */
+
+.paper-reader {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Sticky Category Legend Bar */
+.reader-legend-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.legend-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.legend-items {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.legend-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+}
+
+.legend-badge:hover {
+  transform: translateY(-1px);
+}
+
+.legend-badge:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.legend-badge.disabled {
+  opacity: 0.45;
+  filter: grayscale(0.8);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.legend-count {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Specific Category Badge Colors */
+.badge-result.active {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+.badge-method.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.badge-dataset.active {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.35);
+  color: #a78bfa;
+}
+
+.badge-concept.active {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+}
+
+/* Reader Content Body */
+.reader-content-body {
+  padding: 2.25rem 2.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.reader-text-stream {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.85;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-break: break-word;
+  letter-spacing: -0.01em;
+}
+
+/* Highlighting Styles */
+.reader-mark {
+  background: transparent;
+  color: inherit;
+  padding: 0.1rem 0.25rem;
+  margin: 0 0.05rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: inline;
+}
+
+/* 1. Result Highlight: Strongly emphasized with golden glow and bold */
+.mark-result {
+  background: rgba(245, 158, 11, 0.22);
+  color: #fef3c7;
+  font-weight: 600;
+  border-bottom: 2px solid #f59e0b;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+  text-shadow: 0 0 2px rgba(245, 158, 11, 0.3);
+}
+
+.mark-result:hover,
+.mark-result:focus {
+  background: rgba(245, 158, 11, 0.38);
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.5);
+  outline: none;
+}
+
+/* 2. Method Highlight: Emerald green */
+.mark-method {
+  background: rgba(16, 185, 129, 0.16);
+  color: #d1fae5;
+  border-bottom: 2px solid #10b981;
+}
+
+.mark-method:hover,
+.mark-method:focus {
+  background: rgba(16, 185, 129, 0.28);
+  outline: none;
+}
+
+/* 3. Dataset Highlight: Indigo/Purple */
+.mark-dataset {
+  background: rgba(139, 92, 246, 0.16);
+  color: #ede9fe;
+  border-bottom: 2px solid #8b5cf6;
+}
+
+.mark-dataset:hover,
+.mark-dataset:focus {
+  background: rgba(139, 92, 246, 0.28);
+  outline: none;
+}
+
+/* 4. Concept Highlight: Cyan/Blue clean underline */
+.mark-concept {
+  background: rgba(56, 189, 248, 0.12);
+  color: #e0f2fe;
+  border-bottom: 1.5px solid #0284c7;
+}
+
+.mark-concept:hover,
+.mark-concept:focus {
+  background: rgba(56, 189, 248, 0.24);
+  outline: none;
+}
+
+/* Floating Tooltip Indicator */
+.annotation-floating-tooltip {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 50;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: tooltip-fade 0.2s ease;
+}
+
+.tooltip-tag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.tag-result {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.tag-method {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.tag-dataset {
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
+.tag-concept {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.tooltip-text {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #f8fafc;
+}
+
+.tooltip-score {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+@keyframes tooltip-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
