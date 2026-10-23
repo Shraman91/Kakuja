@@ -2,6 +2,8 @@
 
 Kakuja is a full-stack research discovery platform built around arXiv papers. It crawls and indexes academic papers, extracts useful metadata and textual signals, and provides a polished reader experience with semantic search and related-paper recommendations.
 
+
+
 This project includes:
 - a FastAPI backend for paper ingestion, indexing, and search
 - a React + Vite frontend for browsing and reading papers
