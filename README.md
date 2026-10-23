@@ -1,4 +1,4 @@
-# 🐛 Kakuja (Paper Crawler)
+# 🐛 Kakuja 
 
 [![CI](https://github.com/Shraman91/Kakuja/actions/workflows/ci.yml/badge.svg)](https://github.com/Shraman91/Kakuja/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
