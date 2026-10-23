@@ -1,6 +1,6 @@
 # Kakuja
 
-**Kakuja** is a full-stack research discovery platform built around arXiv papers. It crawls and indexes academic papers, extracts metadata and textual signals, and offers a polished reader experience with semantic search and related-paper recommendations.
+**Kakuja** is a full-stack research discovery platform built around arXiv papers. It crawls and indexes academic papers, extracts metadata and textual signals, and offers a polished reader experience with semantic search and related-paper recommendations.   
 
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
