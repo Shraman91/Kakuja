@@ -100,4 +100,11 @@ export const api = {
   async getRelatedPapers(arxivId: string, limit: number = 5): Promise<RelatedPaper[]> {
     return request<RelatedPaper[]>(`/papers/${encodeURIComponent(arxivId)}/related?limit=${limit}`);
   },
+
+  /** Re-run analysis engine on paper full text and refresh stored annotations */
+  async reanalyzePaper(arxivId: string): Promise<PaperDetail> {
+    return request<PaperDetail>(`/papers/${encodeURIComponent(arxivId)}/reanalyze`, {
+      method: 'POST',
+    });
+  },
 };

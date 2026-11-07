@@ -1,11 +1,12 @@
-/* Navbar Styles */
+/* Navbar Styles - White Theme with Black Undertones */
 
 .navbar-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(10, 15, 30, 0.85);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border-color);
   width: 100%;
 }
@@ -13,7 +14,7 @@
 .navbar-container {
   max-width: 1320px;
   margin: 0 auto;
-  padding: 0.85rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -28,20 +29,21 @@
 }
 
 .brand-logo-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #10b981, #6366f1);
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  background: var(--saas-black);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
-  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.18s ease;
 }
 
 .navbar-brand:hover .brand-logo-icon {
-  transform: scale(1.05) rotate(-3deg);
+  transform: scale(1.04);
+  background: var(--saas-zinc);
 }
 
 .brand-text {
@@ -51,52 +53,60 @@
 }
 
 .brand-name {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .brand-badge {
   font-size: 0.6875rem;
   font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  border-radius: 9999px;
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  letter-spacing: 0.02em;
 }
 
 .navbar-nav {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .nav-link-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.45rem 0.85rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
   font-weight: 500;
   color: var(--text-secondary);
   background: transparent;
   border: 1px solid transparent;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   font-family: inherit;
 }
 
 .nav-link-btn:hover {
   color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: var(--bg-hover);
+  border-color: var(--border-color);
 }
 
 .nav-link-btn.gh-link {
-  background: rgba(255, 255, 255, 0.04);
+  background: #ffffff;
   border-color: var(--border-color);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-xs);
+}
+
+.nav-link-btn.gh-link:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-hover);
 }

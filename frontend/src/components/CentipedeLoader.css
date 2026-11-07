@@ -1,11 +1,11 @@
-/* Centipede Loader Styles */
+/* Centipede Loader Styles - White SaaS Theme */
 
 .centipede-loader-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 1.5rem;
+  padding: 1.25rem;
   width: 100%;
   overflow: hidden;
 }
@@ -13,23 +13,23 @@
 .centipede-track {
   width: 100%;
   max-width: 420px;
-  height: 64px;
+  height: 60px;
   position: relative;
   overflow: hidden;
-  background: rgba(16, 185, 129, 0.04);
-  border: 1px solid rgba(16, 185, 129, 0.15);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-color);
   border-radius: 9999px;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .centipede-svg {
   width: 240px;
-  height: 60px;
+  height: 56px;
   position: absolute;
   top: 2px;
   left: 0;
   animation: centipede-crawl 4.5s linear infinite;
-  filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.25));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
 }
 
 /* Wavy Body Motion */
@@ -65,14 +65,14 @@
 
 .centipede-label {
   margin-top: 0.85rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #10b981;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-primary);
   text-align: center;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
 }
 
 /* Keyframes */
@@ -114,30 +114,27 @@
 
 @keyframes feeler-twitch-top {
   0% {
-    transform: rotate(-6deg);
+    transform: rotate(-8deg);
   }
   100% {
-    transform: rotate(8deg);
+    transform: rotate(12deg);
   }
 }
 
 @keyframes feeler-twitch-bottom {
   0% {
-    transform: rotate(6deg);
+    transform: rotate(8deg);
   }
   100% {
-    transform: rotate(-8deg);
+    transform: rotate(-12deg);
   }
 }
 
-/* Reduced Motion Preference Accessibility */
+/* Accessibility: Respect Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   .centipede-svg {
     animation: none;
-    position: relative;
-    margin: 0 auto;
-    display: block;
-    transform: none;
+    left: 90px;
   }
   .segment-group,
   .leg-left,

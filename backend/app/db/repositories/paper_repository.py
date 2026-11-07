@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
-from sqlalchemy import desc, func, or_, select
+from sqlalchemy import delete, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -77,6 +77,13 @@ class PaperRepository:
         self.session.add_all(annotations)
         await self.session.flush()
         return annotations
+
+    async def replace_annotations(
+        self, paper_id: UUID, annotations_in: list[AnnotationCreate]
+    ) -> list[Annotation]:
+        """Delete existing annotations and bulk insert new annotations for a paper."""
+        await self.session.execute(delete(Annotation).where(Annotation.paper_id == paper_id))
+        return await self.bulk_create_annotations(paper_id, annotations_in)
 
     async def list(
         self,

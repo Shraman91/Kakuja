@@ -1,12 +1,24 @@
 import React, { useMemo, useState } from 'react';
-import type { Annotation, AnnotationCategory } from '../api/types';
+import type { Annotation, AnnotationCategory, PaperDetail } from '../api/types';
+import { api } from '../api/client';
 import './PaperReader.css';
-import { Award, Box, Database, Sparkles, Eye, EyeOff } from 'lucide-react';
+import {
+  Award,
+  Box,
+  Database,
+  Sparkles,
+  Eye,
+  EyeOff,
+  RefreshCw,
+  CheckCircle,
+} from 'lucide-react';
 
 interface PaperReaderProps {
   fullText: string;
   annotations: Annotation[];
   title: string;
+  arxivId?: string;
+  onPaperUpdated?: (updated: PaperDetail) => void;
 }
 
 interface TextSegment {
@@ -15,9 +27,17 @@ interface TextSegment {
   annotation?: Annotation;
 }
 
+interface TooltipState {
+  annotation: Annotation;
+  x: number;
+  y: number;
+}
+
 export const PaperReader: React.FC<PaperReaderProps> = ({
   fullText,
   annotations,
+  arxivId,
+  onPaperUpdated,
 }) => {
   // Active category filter state (all active by default)
   const [activeCategories, setActiveCategories] = useState<Record<AnnotationCategory, boolean>>({
@@ -27,7 +47,9 @@ export const PaperReader: React.FC<PaperReaderProps> = ({
     concept: true,
   });
 
-  const [activeTooltip, setActiveTooltip] = useState<Annotation | null>(null);
+  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const [isReanalyzing, setIsReanalyzing] = useState(false);
+  const [reanalyzeSuccess, setReanalyzeSuccess] = useState(false);
 
   // Toggle category visibility
   const toggleCategory = (category: AnnotationCategory) => {
@@ -35,6 +57,17 @@ export const PaperReader: React.FC<PaperReaderProps> = ({
       ...prev,
       [category]: !prev[category],
     }));
+  };
+
+  // Toggle all categories
+  const toggleAll = () => {
+    const anyActive = Object.values(activeCategories).some(Boolean);
+    setActiveCategories({
+      result: !anyActive,
+      method: !anyActive,
+      dataset: !anyActive,
+      concept: !anyActive,
+    });
   };
 
   // Category counts
@@ -52,6 +85,25 @@ export const PaperReader: React.FC<PaperReaderProps> = ({
     });
     return counts;
   }, [annotations]);
+
+  // Handle re-analyze
+  const handleReanalyze = async () => {
+    if (!arxivId || isReanalyzing) return;
+    setIsReanalyzing(true);
+    setReanalyzeSuccess(false);
+    try {
+      const updated = await api.reanalyzePaper(arxivId);
+      if (onPaperUpdated) {
+        onPaperUpdated(updated);
+      }
+      setReanalyzeSuccess(true);
+      setTimeout(() => setReanalyzeSuccess(false), 3000);
+    } catch (err) {
+      console.error('Failed to reanalyze paper:', err);
+    } finally {
+      setIsReanalyzing(false);
+    }
+  };
 
   // Generate character-offset accurate text segments
   const segments = useMemo(() => {
@@ -102,63 +154,123 @@ export const PaperReader: React.FC<PaperReaderProps> = ({
     return resultSegments;
   }, [fullText, annotations, activeCategories]);
 
+  const handleMouseEnter = (e: React.MouseEvent, ann: Annotation) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({
+      annotation: ann,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8,
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip(null);
+  };
+
   return (
     <div className="paper-reader">
       {/* Sticky Category Legend Bar */}
       <div className="reader-legend-toolbar">
-        <div className="legend-title">Highlights:</div>
-        <div className="legend-items">
-          {/* Result Toggle */}
+        <div className="legend-left-controls">
+          <span className="legend-title">Highlights:</span>
+          <div className="legend-items">
+            {/* Result Toggle */}
+            <button
+              type="button"
+              className={`legend-badge badge-result ${activeCategories.result ? 'active' : 'disabled'}`}
+              onClick={() => toggleCategory('result')}
+              aria-pressed={activeCategories.result}
+              title="Toggle Quantitative Results"
+            >
+              <Award className="legend-icon" size={13} />
+              <span className="legend-label">Results</span>
+              <span className="legend-count">{categoryCounts.result}</span>
+              {activeCategories.result ? <Eye size={11} /> : <EyeOff size={11} />}
+            </button>
+
+            {/* Method Toggle */}
+            <button
+              type="button"
+              className={`legend-badge badge-method ${activeCategories.method ? 'active' : 'disabled'}`}
+              onClick={() => toggleCategory('method')}
+              aria-pressed={activeCategories.method}
+              title="Toggle Method & Technique Names"
+            >
+              <Box className="legend-icon" size={13} />
+              <span className="legend-label">Methods</span>
+              <span className="legend-count">{categoryCounts.method}</span>
+              {activeCategories.method ? <Eye size={11} /> : <EyeOff size={11} />}
+            </button>
+
+            {/* Dataset Toggle */}
+            <button
+              type="button"
+              className={`legend-badge badge-dataset ${activeCategories.dataset ? 'active' : 'disabled'}`}
+              onClick={() => toggleCategory('dataset')}
+              aria-pressed={activeCategories.dataset}
+              title="Toggle Dataset & Benchmark Names"
+            >
+              <Database className="legend-icon" size={13} />
+              <span className="legend-label">Datasets</span>
+              <span className="legend-count">{categoryCounts.dataset}</span>
+              {activeCategories.dataset ? <Eye size={11} /> : <EyeOff size={11} />}
+            </button>
+
+            {/* Concept Toggle */}
+            <button
+              type="button"
+              className={`legend-badge badge-concept ${activeCategories.concept ? 'active' : 'disabled'}`}
+              onClick={() => toggleCategory('concept')}
+              aria-pressed={activeCategories.concept}
+              title="Toggle Key Concepts & Phrases"
+            >
+              <Sparkles className="legend-icon" size={13} />
+              <span className="legend-label">Concepts</span>
+              <span className="legend-count">{categoryCounts.concept}</span>
+              {activeCategories.concept ? <Eye size={11} /> : <EyeOff size={11} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Right Toolbar Actions */}
+        <div className="legend-right-actions">
           <button
             type="button"
-            className={`legend-badge badge-result ${activeCategories.result ? 'active' : 'disabled'}`}
-            onClick={() => toggleCategory('result')}
-            aria-pressed={activeCategories.result}
+            className="reader-toggle-all-btn"
+            onClick={toggleAll}
+            title="Toggle All Highlights"
           >
-            <Award className="legend-icon" size={14} />
-            <span className="legend-label">Results</span>
-            <span className="legend-count">{categoryCounts.result}</span>
-            {activeCategories.result ? <Eye size={12} /> : <EyeOff size={12} />}
+            {Object.values(activeCategories).some(Boolean) ? 'Hide All' : 'Show All'}
           </button>
 
-          {/* Method Toggle */}
-          <button
-            type="button"
-            className={`legend-badge badge-method ${activeCategories.method ? 'active' : 'disabled'}`}
-            onClick={() => toggleCategory('method')}
-            aria-pressed={activeCategories.method}
-          >
-            <Box className="legend-icon" size={14} />
-            <span className="legend-label">Methods</span>
-            <span className="legend-count">{categoryCounts.method}</span>
-            {activeCategories.method ? <Eye size={12} /> : <EyeOff size={12} />}
-          </button>
-
-          {/* Dataset Toggle */}
-          <button
-            type="button"
-            className={`legend-badge badge-dataset ${activeCategories.dataset ? 'active' : 'disabled'}`}
-            onClick={() => toggleCategory('dataset')}
-            aria-pressed={activeCategories.dataset}
-          >
-            <Database className="legend-icon" size={14} />
-            <span className="legend-label">Datasets</span>
-            <span className="legend-count">{categoryCounts.dataset}</span>
-            {activeCategories.dataset ? <Eye size={12} /> : <EyeOff size={12} />}
-          </button>
-
-          {/* Concept Toggle */}
-          <button
-            type="button"
-            className={`legend-badge badge-concept ${activeCategories.concept ? 'active' : 'disabled'}`}
-            onClick={() => toggleCategory('concept')}
-            aria-pressed={activeCategories.concept}
-          >
-            <Sparkles className="legend-icon" size={14} />
-            <span className="legend-label">Concepts</span>
-            <span className="legend-count">{categoryCounts.concept}</span>
-            {activeCategories.concept ? <Eye size={12} /> : <EyeOff size={12} />}
-          </button>
+          {arxivId && (
+            <button
+              type="button"
+              className={`reanalyze-action-btn ${isReanalyzing ? 'loading' : ''} ${
+                reanalyzeSuccess ? 'success' : ''
+              }`}
+              onClick={handleReanalyze}
+              disabled={isReanalyzing}
+              title="Re-run analysis engine and refresh highlights"
+            >
+              {isReanalyzing ? (
+                <>
+                  <RefreshCw size={12} className="spin-icon" />
+                  <span>Re-analyzing...</span>
+                </>
+              ) : reanalyzeSuccess ? (
+                <>
+                  <CheckCircle size={12} />
+                  <span>Updated</span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={12} />
+                  <span>Re-analyze</span>
+                </>
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -175,8 +287,8 @@ export const PaperReader: React.FC<PaperReaderProps> = ({
               <mark
                 key={idx}
                 className={`reader-mark mark-${cat}`}
-                onMouseEnter={() => setActiveTooltip(segment.annotation!)}
-                onMouseLeave={() => setActiveTooltip(null)}
+                onMouseEnter={(e) => handleMouseEnter(e, segment.annotation!)}
+                onMouseLeave={handleMouseLeave}
                 tabIndex={0}
                 role="button"
                 aria-label={`${cat}: ${segment.text}`}
@@ -188,15 +300,23 @@ export const PaperReader: React.FC<PaperReaderProps> = ({
         </div>
       </div>
 
-      {/* Floating Tooltip Indicator */}
-      {activeTooltip && (
-        <div className="annotation-floating-tooltip">
-          <span className={`tooltip-tag tag-${activeTooltip.category}`}>
-            {activeTooltip.category.toUpperCase()}
+      {/* Floating Tooltip Indicator positioned dynamically */}
+      {tooltip && (
+        <div
+          className="annotation-floating-tooltip"
+          style={{
+            position: 'fixed',
+            left: `${tooltip.x}px`,
+            top: `${tooltip.y}px`,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <span className={`tooltip-tag tag-${tooltip.annotation.category}`}>
+            {tooltip.annotation.category.toUpperCase()}
           </span>
-          <span className="tooltip-text">"{activeTooltip.text}"</span>
+          <span className="tooltip-text">"{tooltip.annotation.text}"</span>
           <span className="tooltip-score">
-            Relevance: {(activeTooltip.score * 100).toFixed(0)}%
+            {(tooltip.annotation.score * 100).toFixed(0)}% match
           </span>
         </div>
       )}

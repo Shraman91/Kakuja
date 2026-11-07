@@ -128,6 +128,38 @@ DATASET_TERMS = [
 ]
 
 
+# Academic generic stop words filtered out from concept extraction
+ACADEMIC_STOPWORDS = {
+    "propose", "proposes", "proposed", "proposing",
+    "work", "works", "working",
+    "paper", "papers",
+    "model", "models", "modeling",
+    "method", "methods", "methodology",
+    "approach", "approaches",
+    "result", "results", "resulting",
+    "sample", "samples", "sampling",
+    "show", "shows", "shown", "showing",
+    "based", "using", "uses", "used", "use",
+    "new", "novel", "class", "classes",
+    "state", "case", "cases", "data",
+    "present", "presents", "presented",
+    "contrast", "previous", "represented",
+    "function", "functions", "functional",
+    "task", "tasks", "task-specific",
+    "performance", "high", "low", "different",
+    "large", "small", "figure", "table", "section",
+    "first", "second", "third", "two", "three",
+    "time", "times", "demonstrate", "demonstrates",
+    "order", "general", "specific", "problem", "problems",
+    "including", "pushing", "absolute", "improvement",
+    "create", "range", "need", "needs", "dispensing",
+    "dominant", "complex", "simple", "empirically",
+    "powerful", "superior", "quality", "literature",
+    "literature.", "applying", "successfully",
+    "well", "better", "best", "training", "train",
+}
+
+
 def resolve_overlaps(
     candidates: list[RawAnnotation],
     max_annotations: int = 150,
@@ -268,7 +300,9 @@ class RuleAndModelAnalyzer(BaseAnalyzer):
 
         # 3. Dataset Extraction
         for dataset in DATASET_TERMS:
-            pattern = re.compile(r"\b" + re.escape(dataset) + r"\b", re.IGNORECASE)
+            # Case-sensitive for short 2-4 letter uppercase dataset acronyms (like GLUE, DROP)
+            flags = 0 if (len(dataset) <= 4 and dataset.isupper()) else re.IGNORECASE
+            pattern = re.compile(r"\b" + re.escape(dataset) + r"\b", flags)
             for match in pattern.finditer(full_text):
                 candidates.append(
                     RawAnnotation(
@@ -288,23 +322,47 @@ class RuleAndModelAnalyzer(BaseAnalyzer):
             try:
                 keywords = yake_extractor.extract_keywords(sample_text)
                 for kw, score in keywords:
-                    kw_clean = kw.strip()
+                    kw_clean = kw.strip().strip(".,;:()[]{}'\"")
+                    lower_kw = kw_clean.lower()
+
                     # Filter out short or numeric keywords
-                    if len(kw_clean) < 3 or kw_clean.replace(".", "").isdigit():
+                    if len(kw_clean) < 4 or kw_clean.replace(".", "").isdigit():
                         continue
+
+                    # Filter out generic academic stop words
+                    if lower_kw in ACADEMIC_STOPWORDS:
+                        continue
+
+                    # For single words, require length >= 5 and not a stop word
+                    words = lower_kw.split()
+                    if len(words) == 1 and (len(words[0]) < 5 or words[0] in ACADEMIC_STOPWORDS):
+                        continue
+
+                    # In multi-word phrases, do not allow phrases consisting only of stop words
+                    if all(w in ACADEMIC_STOPWORDS for w in words):
+                        continue
+
                     # In YAKE, lower score means higher relevance
                     relevance = max(0.1, min(1.0, 1.0 - (score / 2.0)))
-                    pattern = re.compile(r"\b" + re.escape(kw_clean) + r"\b", re.IGNORECASE)
-                    for match in pattern.finditer(full_text):
-                        candidates.append(
-                            RawAnnotation(
-                                category="concept",
-                                start_offset=match.start(),
-                                end_offset=match.end(),
-                                text=full_text[match.start() : match.end()],
-                                score=round(relevance, 2),
+                    try:
+                        pattern = re.compile(r"\b" + re.escape(kw_clean) + r"\b", re.IGNORECASE)
+                        match_count = 0
+                        # Cap occurrences of each concept to at most 3 to avoid spamming the same word
+                        for match in pattern.finditer(full_text):
+                            if match_count >= 3:
+                                break
+                            candidates.append(
+                                RawAnnotation(
+                                    category="concept",
+                                    start_offset=match.start(),
+                                    end_offset=match.end(),
+                                    text=full_text[match.start() : match.end()],
+                                    score=round(relevance, 2),
+                                )
                             )
-                        )
+                            match_count += 1
+                    except Exception:
+                        continue
             except Exception as exc:
                 logger.warning("YAKE keyword extraction encountered an error: %s", exc)
 

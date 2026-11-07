@@ -219,9 +219,9 @@ export const SearchCrawlBar: React.FC<SearchCrawlBarProps> = ({
           <CentipedeLoader
             active={true}
             label={getJobStatusLabel(activeJob)}
-            body="#10b981"
-            legs="#059669"
-            head="#047857"
+            body="#18181b"
+            legs="#27272a"
+            head="#09090b"
           />
         </div>
       )}

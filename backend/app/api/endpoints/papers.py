@@ -158,3 +158,45 @@ async def get_related_papers(
         response_items.append(RelatedPaperResponse.model_validate(item_dict))
 
     return response_items
+
+
+@router.post(
+    "/{arxiv_id}/reanalyze",
+    response_model=PaperDetailResponse,
+    summary="Re-analyze highlights on full text using updated analysis engine",
+)
+async def reanalyze_paper(arxiv_id: str, db: AsyncSession = Depends(get_db)):
+    """Re-run the highlight analysis engine on a paper's stored full text and refresh annotations."""
+    from app.analysis.analyzer import default_analyzer
+    from app.schemas.paper import AnnotationCreate
+
+    clean_id = normalize_arxiv_id(arxiv_id)
+    paper_repo = PaperRepository(db)
+    paper = await paper_repo.get_by_arxiv_id(clean_id, load_annotations=True)
+    if not paper:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Paper with arXiv ID '{clean_id}' was not found.",
+        )
+
+    text_to_analyze = paper.full_text or paper.abstract
+    raw_annotations = default_analyzer.extract_annotations_pure(
+        full_text=text_to_analyze,
+        abstract=paper.abstract,
+    )
+
+    annotations_create = [
+        AnnotationCreate(
+            category=item.category,
+            start_offset=item.start_offset,
+            end_offset=item.end_offset,
+            text=item.text,
+            score=item.score,
+        )
+        for item in raw_annotations
+    ]
+    await paper_repo.replace_annotations(paper.id, annotations_create)
+    await db.commit()
+
+    refreshed = await paper_repo.get_by_arxiv_id(clean_id, load_annotations=True)
+    return refreshed

@@ -1,9 +1,10 @@
-/* App Root Layout Styles */
+/* App Root Layout Styles - White SaaS Theme */
 
 .app-root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-secondary);
 }
 
 .app-main-content {
@@ -13,7 +14,7 @@
 .app-footer {
   margin-top: auto;
   border-top: 1px solid var(--border-color);
-  background: rgba(10, 15, 29, 0.95);
+  background: #ffffff;
   padding: 2rem 1.5rem;
   color: var(--text-muted);
   font-size: 0.8125rem;
@@ -30,8 +31,16 @@
 
 .footer-notice {
   line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.footer-notice a {
+  color: var(--text-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 .footer-copy {
-  color: #475569;
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
