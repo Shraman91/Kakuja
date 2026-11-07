@@ -97,15 +97,18 @@ class ArxivClient:
     ) -> httpx.Response:
         """Execute HTTP request with strict rate limiting and exponential backoff on 5xx/timeouts."""
         last_exception: Optional[Exception] = None
+        max_attempts = 1 if is_binary else self.max_retries
+        read_timeout = 25.0 if is_binary else self.timeout
 
-        for attempt in range(1, self.max_retries + 1):
+        for attempt in range(1, max_attempts + 1):
             try:
                 # Wait for global 3-second rate limiter
                 await arxiv_rate_limiter.acquire()
 
+                client_timeout = httpx.Timeout(connect=10.0, read=read_timeout, write=15.0, pool=15.0)
                 async with httpx.AsyncClient(
                     headers=self.headers,
-                    timeout=self.timeout,
+                    timeout=client_timeout,
                     follow_redirects=True,
                 ) as client:
                     logger.debug("Requesting arXiv (attempt %d/%d): %s", attempt, self.max_retries, url)

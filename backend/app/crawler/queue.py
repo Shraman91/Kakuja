@@ -53,21 +53,31 @@ class CrawlerService:
                 await job_repo.update_status(job_id, status="downloading_pdf", progress=40)
                 await session.commit()
 
-                pdf_bytes = await arxiv_client.download_pdf_bytes(clean_id)
+                pdf_bytes: bytes | None = None
+                try:
+                    pdf_bytes = await arxiv_client.download_pdf_bytes(clean_id)
+                except Exception as exc:
+                    logger.warning(
+                        "Could not download PDF for '%s' (%s). Falling back to paper abstract.",
+                        clean_id,
+                        exc,
+                    )
 
                 # 4. Extract Text with PyMuPDF
                 await job_repo.update_status(job_id, status="downloading_pdf", progress=60)
                 await session.commit()
 
-                try:
-                    full_text = await extract_text_from_pdf(pdf_bytes)
-                except Exception as exc:
-                    logger.warning(
-                        "Could not extract full text from PDF for '%s': %s. Falling back to abstract.",
-                        clean_id,
-                        exc,
-                    )
-                    full_text = meta.abstract
+                full_text = ""
+                if pdf_bytes:
+                    try:
+                        full_text = await extract_text_from_pdf(pdf_bytes)
+                    except Exception as exc:
+                        logger.warning(
+                            "Could not extract full text from PDF for '%s': %s. Falling back to abstract.",
+                            clean_id,
+                            exc,
+                        )
+                        full_text = meta.abstract
 
                 if not full_text or len(full_text.strip()) < 50:
                     full_text = meta.abstract

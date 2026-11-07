@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     ARXIV_PDF_BASE_URL: str = "https://arxiv.org/pdf"
     ARXIV_RATE_LIMIT_SECONDS: float = 3.0
     ARXIV_USER_AGENT: str = "PaperCrawler/1.0 (mailto:contact@papercrawler.local)"
-    ARXIV_TIMEOUT_SECONDS: float = 30.0
+    ARXIV_TIMEOUT_SECONDS: float = 60.0
     ARXIV_MAX_RETRIES: int = 3
 
     # Analysis & Embedding
