@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import type { Annotation, RelatedPaper } from '../api/types';
-import { api } from '../api/client';
-import './Sidebar.css';
-import { ExternalLink, FileText, Sparkles, Award, ArrowRight } from 'lucide-react';
+import type { Annotation, RelatedPaper } from '@/api/types';
+import { api } from '@/api/client';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import {
+  ExternalLink,
+  FileText,
+  Sparkles,
+  Award,
+  ArrowRight,
+  Database,
+} from 'lucide-react';
 
 interface SidebarProps {
   arxivId: string;
@@ -40,7 +49,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     };
   }, [arxivId]);
 
-  // Extract unique key concepts
+  // Key concepts
   const keyConcepts = React.useMemo(() => {
     const concepts = annotations.filter((a) => a.category === 'concept');
     const uniqueMap = new Map<string, number>();
@@ -53,7 +62,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       .slice(0, 16);
   }, [annotations]);
 
-  // Extract key headline results
+  // Headline results
   const headlineResults = React.useMemo(() => {
     const results = annotations.filter((a) => a.category === 'result');
     const unique = Array.from(new Set(results.map((r) => r.text)));
@@ -64,115 +73,155 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const directPdfUrl = pdfUrl || `https://arxiv.org/pdf/${arxivId}.pdf`;
 
   return (
-    <aside className="paper-sidebar">
+    <aside className="flex flex-col gap-6 w-full">
       {/* Official arXiv Source Links */}
-      <div className="sidebar-section">
-        <h3 className="sidebar-heading">Original Source</h3>
-        <div className="source-links-group">
+      <Card className="p-5 bg-[var(--paper)] border-[var(--border)] shadow-navy-sm">
+        <h3 className="font-serif-display text-lg text-[var(--navy)] mb-3">
+          Original Source
+        </h3>
+        <div className="flex flex-col gap-2.5">
           <a
             href={arxivAbsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="source-link-btn"
+            className="flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--cream)] px-3.5 py-2 text-xs font-medium text-[var(--navy)] hover:bg-[var(--cream-deep)] transition-colors"
           >
-            <FileText size={15} />
-            <span>arXiv Abstract</span>
-            <ExternalLink size={13} className="ext-icon" />
+            <div className="flex items-center gap-2">
+              <FileText size={14} className="text-[var(--navy-soft)]" />
+              <span>arXiv Abstract</span>
+            </div>
+            <ExternalLink size={12} className="opacity-60" />
           </a>
+
           <a
             href={directPdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="source-link-btn primary"
+            className="flex items-center justify-between rounded-xl bg-[var(--navy)] px-3.5 py-2 text-xs font-medium text-[var(--cream)] hover:bg-[var(--navy-soft)] shadow-navy-sm transition-all"
           >
-            <FileText size={15} />
-            <span>Official PDF</span>
-            <ExternalLink size={13} className="ext-icon" />
+            <div className="flex items-center gap-2">
+              <FileText size={14} className="text-[var(--accent)]" />
+              <span>Official PDF</span>
+            </div>
+            <ExternalLink size={12} className="opacity-80" />
           </a>
         </div>
-      </div>
+      </Card>
 
       {/* Headline Results */}
       {headlineResults.length > 0 && (
-        <div className="sidebar-section">
-          <h3 className="sidebar-heading">
-            <Award size={15} className="heading-icon gold" />
-            Headline Results
-          </h3>
-          <div className="results-list">
+        <Card className="p-5 bg-[var(--paper)] border-[var(--border)] shadow-navy-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Award size={15} className="text-[#D9A441]" />
+            <h3 className="font-serif-display text-lg text-[var(--navy)]">
+              Headline Results
+            </h3>
+          </div>
+          <div className="flex flex-col gap-2">
             {headlineResults.map((res, i) => (
-              <div key={i} className="result-chip">
-                <span className="result-bullet">★</span>
-                <span className="result-text">{res}</span>
+              <div
+                key={i}
+                className="flex items-start gap-2 rounded-xl border border-[#D9A441]/40 bg-[#D9A441]/15 px-3 py-2 text-xs text-[#684803] font-semibold"
+              >
+                <span className="text-[#D9A441] mt-0.5">★</span>
+                <span className="break-words">{res}</span>
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* Key Concepts Cloud */}
+      {/* Key Concepts Badges */}
       {keyConcepts.length > 0 && (
-        <div className="sidebar-section">
-          <h3 className="sidebar-heading">
-            <Sparkles size={15} className="heading-icon blue" />
-            Key Concepts
-          </h3>
-          <div className="concepts-cloud">
+        <Card className="p-5 bg-[var(--paper)] border-[var(--border)] shadow-navy-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={15} className="text-[#C2674A]" />
+            <h3 className="font-serif-display text-lg text-[var(--navy)]">
+              Key Concepts
+            </h3>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
             {keyConcepts.map(([concept, count], i) => (
-              <span key={i} className="concept-pill">
-                {concept}
-                {count > 1 && <span className="pill-count">{count}</span>}
-              </span>
+              <Badge
+                key={i}
+                variant="concept"
+                className="text-[11px] font-normal py-0.5 px-2.5 rounded-lg"
+              >
+                <span>{concept}</span>
+                {count > 1 && (
+                  <span className="ml-1 text-[9px] font-mono-code font-bold opacity-75">
+                    ×{count}
+                  </span>
+                )}
+              </Badge>
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Related Papers via pgvector */}
-      <div className="sidebar-section">
-        <h3 className="sidebar-heading">Related Papers (pgvector)</h3>
+      <Card className="p-5 bg-[var(--paper)] border-[var(--border)] shadow-navy-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Database size={15} className="text-[#2A7F7F]" />
+            <h3 className="font-serif-display text-lg text-[var(--navy)]">
+              Semantic Relatives
+            </h3>
+          </div>
+          <span className="font-mono-code text-[10px] text-[var(--navy-soft)]/60">
+            pgvector
+          </span>
+        </div>
+
         {loadingRelated ? (
-          <div className="sidebar-skeleton">Calculating similarity...</div>
+          <div className="py-4 text-center text-xs text-[var(--navy-soft)]/70 font-mono-code">
+            Computing cosine distance...
+          </div>
         ) : relatedPapers.length === 0 ? (
-          <p className="sidebar-empty">No similar papers indexed yet.</p>
+          <p className="py-3 text-xs text-[var(--navy-soft)]/70">
+            No semantic neighbors found yet.
+          </p>
         ) : (
-          <div className="related-papers-list">
+          <div className="flex flex-col gap-3">
             {relatedPapers.map((paper) => {
               const simPercent = Math.round(paper.similarity_score * 100);
               return (
                 <div
                   key={paper.id}
-                  className="related-paper-card"
                   onClick={() => onNavigatePaper(paper.arxiv_id)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') onNavigatePaper(paper.arxiv_id);
                   }}
+                  className="group relative rounded-xl border border-[var(--border)] bg-[var(--cream)] p-3 cursor-pointer hover:border-[var(--navy)] hover:shadow-navy-sm transition-all"
                 >
-                  <div className="related-paper-title">{paper.title}</div>
-                  <div className="related-paper-authors">
+                  <h4 className="font-serif-display text-sm font-normal text-[var(--navy)] line-clamp-2 leading-snug group-hover:text-[var(--navy-ink)]">
+                    {paper.title}
+                  </h4>
+                  <p className="mt-1 text-[11px] text-[var(--navy-soft)]/70 truncate">
                     {paper.authors.slice(0, 2).join(', ')}
                     {paper.authors.length > 2 && ' et al.'}
+                  </p>
+
+                  {/* Similarity Progress Bar */}
+                  <div className="mt-2.5 flex items-center gap-2">
+                    <Progress value={simPercent} className="h-1.5 flex-1" />
+                    <span className="font-mono-code text-[10px] font-semibold text-[var(--navy)]">
+                      {simPercent}%
+                    </span>
                   </div>
-                  <div className="similarity-row">
-                    <div className="similarity-bar-bg">
-                      <div
-                        className="similarity-bar-fill"
-                        style={{ width: `${Math.max(10, simPercent)}%` }}
-                      />
-                    </div>
-                    <span className="similarity-label">{simPercent}% match</span>
-                  </div>
-                  <div className="card-hover-arrow">
-                    <ArrowRight size={14} />
-                  </div>
+
+                  <ArrowRight
+                    size={13}
+                    className="absolute right-3 top-3 text-[var(--navy-soft)]/40 group-hover:text-[var(--accent)] group-hover:translate-x-0.5 transition-all"
+                  />
                 </div>
               );
             })}
           </div>
         )}
-      </div>
+      </Card>
     </aside>
   );
 };
