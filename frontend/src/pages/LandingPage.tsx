@@ -5,7 +5,6 @@ import { CountUp } from '@/components/fx/CountUp';
 import { Marquee } from '@/components/fx/Marquee';
 import { MagneticButton } from '@/components/fx/MagneticButton';
 import { SpotlightCard } from '@/components/fx/SpotlightCard';
-import { CentipedeLoader } from '@/components/CentipedeLoader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -165,16 +164,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Decorative Centipede Crawler along the bottom edge */}
-        <div className="absolute bottom-2 left-0 right-0 z-10 flex justify-center opacity-85">
-          <CentipedeLoader
-            active={true}
-            theme="gold"
-            size="sm"
-            label="arXiv rate-limit compliant crawler active"
-          />
         </div>
       </section>
 

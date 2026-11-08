@@ -45,3 +45,4 @@ export const SplitText: React.FC<SplitTextProps> = ({
 };
 
 export default SplitText;
+

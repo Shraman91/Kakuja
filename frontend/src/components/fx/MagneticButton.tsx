@@ -55,3 +55,4 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
 };
 
 export default MagneticButton;
+

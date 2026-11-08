@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '@/api/client';
 import type { FetchJob, PaperListItem } from '@/api/types';
-import { CentipedeLoader } from '@/components/CentipedeLoader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import {
@@ -330,15 +330,100 @@ export const DiscoverPage: React.FC<DiscoverPageProps> = ({
           </TabsContent>
         </Tabs>
 
-        {/* Ingestion Centipede Progress Loader */}
+        {/* SaaS Ingestion Pipeline Progress Card */}
         {isSubmitting && (
-          <div className="mt-6 pt-6 border-t border-[var(--border-subtle)] flex flex-col items-center">
-            <CentipedeLoader
-              active={true}
-              theme="navy"
-              size="md"
-              label={getJobStatusLabel(activeJob)}
-            />
+          <div className="mt-6 pt-6 border-t border-[var(--border-subtle)]">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--paper)] p-5 shadow-navy-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent)] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--accent)]"></span>
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-mono-code font-semibold uppercase tracking-wider text-[var(--navy-soft)]">
+                      {activeJob?.arxiv_id ? `Ingesting arXiv ID ${activeJob.arxiv_id}` : 'arXiv Research Engine'}
+                    </div>
+                    <div className="text-sm font-medium text-[var(--navy)]">
+                      {getJobStatusLabel(activeJob)}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono-code text-xs font-bold text-[var(--navy)] bg-[var(--cream-deep)] px-2.5 py-1 rounded-md border border-[var(--border)]">
+                    {activeJob ? `${activeJob.progress}%` : 'Processing...'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <Progress
+                value={activeJob ? activeJob.progress : 30}
+                className="h-2 bg-[var(--cream-deep)]"
+              />
+
+              {/* 4 Pipeline Stage Trackers */}
+              <div className="mt-3.5 grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2.5 border-t border-[var(--border-subtle)] text-[11px] font-mono-code">
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    !activeJob || ['queued', 'fetching_metadata', 'downloading_pdf', 'analyzing', 'completed'].includes(activeJob.status)
+                      ? 'text-[var(--navy)] font-semibold'
+                      : 'text-[var(--navy-soft)]/40'
+                  }`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)]"></span>
+                  <span>1. Atom Feed</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    activeJob && ['downloading_pdf', 'analyzing', 'completed'].includes(activeJob.status)
+                      ? 'text-[var(--navy)] font-semibold'
+                      : 'text-[var(--navy-soft)]/40'
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      activeJob && ['downloading_pdf', 'analyzing', 'completed'].includes(activeJob.status)
+                        ? 'bg-[var(--accent)]'
+                        : 'bg-[var(--border)]'
+                    }`}
+                  ></span>
+                  <span>2. PDF Stream</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    activeJob && ['analyzing', 'completed'].includes(activeJob.status)
+                      ? 'text-[var(--navy)] font-semibold'
+                      : 'text-[var(--navy-soft)]/40'
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      activeJob && ['analyzing', 'completed'].includes(activeJob.status)
+                        ? 'bg-[var(--accent)]'
+                        : 'bg-[var(--border)]'
+                    }`}
+                  ></span>
+                  <span>3. Heuristics</span>
+                </div>
+                <div
+                  className={`flex items-center gap-1.5 transition-colors ${
+                    activeJob && activeJob.status === 'completed'
+                      ? 'text-emerald-700 font-semibold'
+                      : 'text-[var(--navy-soft)]/40'
+                  }`}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      activeJob && activeJob.status === 'completed'
+                        ? 'bg-emerald-600'
+                        : 'bg-[var(--border)]'
+                    }`}
+                  ></span>
+                  <span>4. pgvector</span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </Card>

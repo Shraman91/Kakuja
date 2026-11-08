@@ -77,3 +77,4 @@ export const SpotlightCard: React.FC<SpotlightCardProps> = ({
 };
 
 export default SpotlightCard;
+
