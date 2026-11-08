@@ -15,13 +15,21 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
+  } catch (err: any) {
+    if (err.name === 'TypeError' || err.message?.toLowerCase().includes('fetch')) {
+      throw new Error(`Cannot connect to backend (${API_BASE_URL}). Is the FastAPI server running?`);
+    }
+    throw err;
+  }
 
   if (!response.ok) {
     let errorMessage = `HTTP ${response.status}: ${response.statusText}`;

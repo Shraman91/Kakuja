@@ -24,21 +24,11 @@ export const WordRoll: React.FC<WordRollProps> = ({
   }, [words, intervalMs]);
 
   if (shouldReduceMotion) {
-    return (
-      <span className={`inline-block font-serif-display italic text-[var(--accent)] ${className}`}>
-        {words[index]}
-      </span>
-    );
+    return <span className={className}>{words[index]}</span>;
   }
 
   return (
-    <span
-      className={`relative inline-grid grid-cols-1 grid-rows-1 overflow-hidden align-baseline ${className}`}
-      style={{
-        display: 'inline-grid',
-        verticalAlign: 'baseline',
-      }}
-    >
+    <span className={`relative inline-flex h-[1.25em] overflow-hidden align-middle ${className}`}>
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={words[index]}
@@ -46,14 +36,10 @@ export const WordRoll: React.FC<WordRollProps> = ({
           animate={{ y: '0%', opacity: 1 }}
           exit={{ y: '-100%', opacity: 0 }}
           transition={{
-            duration: 0.5,
+            duration: 0.55,
             ease: [0.16, 1, 0.3, 1],
           }}
-          className="col-start-1 row-start-1 inline-block whitespace-nowrap font-serif-display italic text-[var(--accent)] px-0.5"
-          style={{
-            verticalAlign: 'baseline',
-            lineHeight: 'inherit',
-          }}
+          className="inline-block whitespace-nowrap text-[var(--accent)] font-serif-display italic"
         >
           {words[index]}
         </motion.span>
