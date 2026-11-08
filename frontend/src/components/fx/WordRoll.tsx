@@ -28,7 +28,7 @@ export const WordRoll: React.FC<WordRollProps> = ({
   }
 
   return (
-    <span className={`relative inline-flex h-[1.25em] overflow-hidden align-middle ${className}`}>
+    <span className={`relative inline-flex h-[1.25em] overflow-hidden align-baseline items-baseline ${className}`}>
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={words[index]}
